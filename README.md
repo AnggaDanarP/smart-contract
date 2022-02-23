@@ -29,3 +29,13 @@ kedua fungsi pengiriman token tersebut akan dilakukan fungsi tambahan berupa fun
 
 dan seberapa banyak spender mengirimkan tokennya dapat menggunakan fungsi `allow`
 # TEST 5
+fungsi `getMessageHash()` bertujuan untuk sign dan melakukan hashing pada pesan yang diinputkan oleh user menggunakan algoritma hash keccak256.
+
+Fungsi `getEthSignedMessageHash()` membutuhkan signatur yang dihasilkan dengan melakukan signing keccak256 menggunakan format berikut. `"\x19Ethereum Signed Message\n" + len(msg) + msg`. panjang dari message adalah 32 karena hasil dari hash keccak256 itu sendiri terdiri dari `32 bytes`.
+
+Kedua fungsi di atas adalah fungsi yang kita gunakan dalam memproses pesan yang sudah di hash. Setelah itu fungsi `verify()` bertujuan untuk melakukan pengecekan hasil perbandingan `getMessageHash()` dengan `getEthSignedMessageHash()` apakah sama.
+
+fungsi `recoverSigner()` memanggil fungsi build-in `ecrecover` yang mempunyai parameter hasil dari fungsi `getEthSignedMessageHash()` beserta parameter `r`, `s`, `v` yang dilakukan split.
+
+fungsi `splitSignature()` bertujuan untuk melakukan pemecahan `byte signature` yang membunyai panjang `96 bytes`. Kode program akan melakukan skip pada `32 bytes` pertama dan dimasukan kedalam variable `r`. Untuk mendapatkan variable `s` akan dilakukan hal yang sama dengan skip dari `32 bytes` sampai dengan `64 bytes` panjang dari signature. Untuk mendapatkan variable `v` dilakukan skip `96 bytes`.
+
