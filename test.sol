@@ -1,22 +1,43 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: UNLICENSED
 
-// Test 1: sample transaction terkait preventing reentrancy attack
-import '@openzeppelin/contract/utils/ReentrancyGuard.sol';
+// Test 1 
+// sample transaction terkait preventing reentrancy attack
 
-interface ReceiverInterface {
-    function onReceive() external;
-}
+contract Test1 {
+    mapping(address => uint) public balances;
+    
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+    }
 
-contract Test1 is ReentrancyGuard {
-    constructor() ReentrancyGuard() public {}
+    // made modifier to prevent reentrancy attack
+    bool internal locked;
+    modifier noReentrant() {
+        require(!locked, "No reentrancy allowed");
+        locked = true;
+        _;
+        locked = false;
+    }
 
-    function withdraw(uint amount) nonReentrant() external {
-        ReceiverInterface(msg.sender).onReceive();
+    function withdraw(uint _amount) public noReentrant {
+        require(_amount <= balances[msg.sender]);
+        
+        // move this code in to function to prevent reentrancy attack
+        balances[msg.sender] -= _amount;
+
+        (bool sent, ) = msg.sender.call{value: _amount}("");
+        require(sent, "failed to send");
+
+    }
+
+    function getBalance() public view returns (uint) {
+        return balances[msg.sender];
     }
 }
 
-// Test 2: melakukan concat string dengan parameter function
+// Test 2
+// melakukan concat string dengan parameter function
 contract Test2 {
     // concat string and string
     function concatenateString(string calldata a, string calldata b) public pure returns (string memory) {
@@ -51,11 +72,30 @@ contract Test2 {
         return string(abi.encodePacked(a, uintToString(b)));
     }
 
-    // concat all struct data
-    function concatAllStruct(){}
+    // concat all the data in struct
+    struct ConcatAllStruct {
+        string one;
+        string two;
+        uint three;
+    }
+
+    ConcatAllStruct wordStruct;
+
+    function setStruct(string memory _one, string memory _two, uint _three) public {
+        wordStruct.one = _one;
+        wordStruct.two = _two;
+        wordStruct.three = _three;
+        
+    }
+
+    function concatStruct() public view returns (string memory) {
+        string memory stringNumber = uintToString(wordStruct.three);
+        return string(abi.encodePacked(wordStruct.one, wordStruct.two, stringNumber));
+    }
 }
 
-// Test 3: membuat smart contract
+// Test 3
+// membuat smart contract
 contract Test3 {
     struct User {
         address walletAddress;
@@ -94,7 +134,8 @@ contract Test3 {
     }
 }
 
-// Test 4: sample transaction transfer menggunakan ERC20, misal transfer weth, transfer dari sender ke user lain
+// Test 4
+// sample transaction transfer menggunakan ERC20, misal transfer weth, transfer dari sender ke user lain
 interface ERC20 {
     function totalSupply() external view returns (uint);
     function balance(address _owner) external view returns (uint);

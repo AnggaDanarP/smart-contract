@@ -1,5 +1,7 @@
 # TEST 1
+Jadi sintaks ini `(bool sent, ) = msg.sender.call{value: _amount}("");` pada funsi `withdraw()` secara otomatis akan mentrigger fungsi `callback()` pada attacker sehingga akan memanggil kembali fungsi `withdraw()` lagi. Pada fungsi `withdraw()` akan dilakukan pengecekan dan melakukan UPDATE pada balance sebelum mentransfer ether[ `balances[msg.sender] -= _amount;` ]. Yang pada akhirnya `require(_amount <= balances[msg.sender]);` akan menganggap `false` dan secara otomatis sistem akan memberhentikan looping `callbac()` dari attacker.
 
+Cara kedua dengan menambahkan modifier yang bertujuan untuk melakukan `locked` pada sebuah fungsi dimana hanya dapat melakukan satu kali pengeksekusian pada fungsi `withdraw()`. Jadi saat fungsi di eksekusi, `bool locked internal` akan di set menjadi `true`, kemudian mengeksekusi fungsi `withdraw`. Saat attacker menggunakan fungsi `calback()` untuk memanggil fungsi `withdraw()` kedua kalinya sebelum eksekusi pertamanya selesai, modifier akan dipanggil lagi dimana varibale `locked` adlah `true` yang membuat pemanggilan kedua menjadi gagal dengan bantuan sintaks `require(!locked, "No reentrancy allowed");` pada modifier.
 # TEST 2
 Smart contract untuk menggabungkan string dan string, string dengan uint, dan menggabungkan kumpulan data struct menjadi satu.
 # TEST 3
